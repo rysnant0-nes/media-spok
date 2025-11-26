@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Drag-Drop Detektif SPOK (Untuk Guru)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+        body {
+            font-family: 'Fredoka', cursive;
+            background: linear-gradient(to right bottom, #fef08a, #fbcfe8);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .drop-target {
+            min-height: 120px;
+            border-radius: 1rem;
+            transition: all 0.3s;
+            border: 3px dashed transparent;
+        }
+
+        .drag-active {
+            border: 3px dashed #6366f1; /* indigo-500 */
+            background-color: #e0e7ff; /* indigo-100 */
+        }
+
+        .word-token {
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+            margin: 4px;
+        }
+
+        .word-token:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Warna untuk hasil akhir */
+        .correct-drop {
+            background-color: #d1fae5; /* green-100 */
+        }
+        .incorrect-drop {
+            background-color: #fee2e2; /* red-100 */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-6xl bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border-8 border-yellow-500">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-5xl font-extrabold text-yellow-700 leading-tight">
+                🎮 Drag-Drop Detektif SPOK 🔍
+            </h1>
+            <p class="text-xl text-gray-600 mt-3">
+                Mari susun peran kata-kata di kalimat ini! (Mode Guru & Siswa)
+            </p>
+        </header>
+
+        <div class="mb-10 p-6 bg-gray-100 rounded-xl border-4 border-gray-300">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Kalimat Saat Ini:</h3>
+            <div id="sentence-container" class="text-4xl font-extrabold text-indigo-800 flex flex-wrap justify-center">
+                </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+
+            <div id="drop-S" data-spok="S" class="drop-target bg-yellow-100 p-4 border-4 border-yellow-500 hover:border-yellow-700">
+                <h4 class="text-2xl font-bold text-yellow-700 text-center mb-2">S (SUBJEK)</h4>
+            </div>
+
+            <div id="drop-P" data-spok="P" class="drop-target bg-green-100 p-4 border-4 border-green-500 hover:border-green-700">
+                <h4 class="text-2xl font-bold text-green-700 text-center mb-2">P (PREDIKAT)</h4>
+            </div>
+
+            <div id="drop-O" data-spok="O" class="drop-target bg-red-100 p-4 border-4 border-red-500 hover:border-red-700">
+                <h4 class="text-2xl font-bold text-red-700 text-center mb-2">O (OBJEK)</h4>
+            </div>
+
+            <div id="drop-K" data-spok="K" class="drop-target bg-blue-100 p-4 border-4 border-blue-500 hover:border-blue-700">
+                <h4 class="text-2xl font-bold text-blue-700 text-center mb-2">K (KETERANGAN)</h4>
+            </div>
+
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+            <button id="check-button" onclick="checkAllAnswers()" class="px-8 py-3 bg-indigo-600 text-white rounded-full font-bold text-xl hover:bg-indigo-700 transition transform hover:scale-105">
+                ✅ Periksa Jawaban
+            </button>
+            <button id="next-button" onclick="loadNextQuestion()" class="px-8 py-3 bg-fuchsia-600 text-white rounded-full font-bold text-xl hover:bg-fuchsia-700 transition transform hover:scale-105" disabled>
+                ➡️ Soal Berikutnya
+            </button>
+        </div>
+
+        <div id="final-feedback" class="text-center mt-8 p-4 rounded-xl font-bold text-2xl hidden">
+            </div>
+
+    </div>
+
+    <script>
+const QUESTIONS = [
+    // Soal 1: S-P-O-K (Lengkap)
+    {
+        sentence: "Adik makan roti di dapur.",
+        parts: [
+            { word: "Adik", role: "S" },
+            { word: "makan", role: "P" },
+            { word: "roti", role: "O" },
+            { word: "di dapur.", role: "K" },
+        ]
+    },
+    // Soal 2: S-P-O-K (Lengkap)
+    {
+        sentence: "Ibu membeli sayur di pasar tradisional.",
+        parts: [
+            { word: "Ibu", role: "S" },
+            { word: "membeli", role: "P" },
+            { word: "sayur", role: "O" },
+            { word: "di pasar tradisional.", role: "K" },
+        ]
+    },
+    // Soal 3: S-P-K (Dua Keterangan, Tanpa Objek)
+    {
+        sentence: "Kucing berlari cepat setiap sore.",
+        parts: [
+            { word: "Kucing", role: "S" },
+            { word: "berlari", role: "P" },
+            { word: "cepat", role: "K" },
+            { word: "setiap sore.", role: "K" },
+        ]
+    },
+    
+    // --- SOAL BARU DIMULAI DARI SINI (12 Tambahan) ---
+
+    // Soal 4: S-P-O (Tanpa Keterangan)
+    {
+        sentence: "Kakek minum kopi hitam.",
+        parts: [
+            { word: "Kakek", role: "S" },
+            { word: "minum", role: "P" },
+            { word: "kopi hitam.", role: "O" },
+        ]
+    },
+    // Soal 5: S-P (Tanpa Objek/Keterangan)
+    {
+        sentence: "Pesawat itu terbang.",
+        parts: [
+            { word: "Pesawat itu", role: "S" },
+            { word: "terbang.", role: "P" },
+        ]
+    },
+    // Soal 6: S-P-K (Keterangan Tempat)
+    {
+        sentence: "Para siswa belajar di kelas.",
+        parts: [
+            { word: "Para siswa", role: "S" },
+            { word: "belajar", role: "P" },
+            { word: "di kelas.", role: "K" },
+        ]
+    },
+    // Soal 7: S-P-O-K (Keterangan Alat)
+    {
+        sentence: "Petani memotong rumput dengan sabit.",
+        parts: [
+            { word: "Petani", role: "S" },
+            { word: "memotong", role: "P" },
+            { word: "rumput", role: "O" },
+            { word: "dengan sabit.", role: "K" },
+        ]
+    },
+    // Soal 8: S-P-O-K (Keterangan Tujuan)
+    {
+        sentence: "Ayah bekerja keras demi keluarga.",
+        parts: [
+            { word: "Ayah", role: "S" },
+            { word: "bekerja", role: "P" },
+            { word: "keras", role: "K" },
+            { word: "demi keluarga.", role: "K" },
+        ]
+    },
+    // Soal 9: S-P-O (Objek berupa frasa)
+    {
+        sentence: "Kami menonton pertandingan sepak bola.",
+        parts: [
+            { word: "Kami", role: "S" },
+            { word: "menonton", role: "P" },
+            { word: "pertandingan sepak bola.", role: "O" },
+        ]
+    },
+    // Soal 10: S-P-K (Keterangan Sebab)
+    {
+        sentence: "Dia tidak masuk sekolah karena sakit.",
+        parts: [
+            { word: "Dia", role: "S" },
+            { word: "tidak masuk", role: "P" },
+            { word: "sekolah", role: "O" }, // Objek
+            { word: "karena sakit.", role: "K" },
+        ]
+    },
+    // Soal 11: S-P (Kata sifat sebagai Predikat)
+    {
+        sentence: "Meja itu bersih.",
+        parts: [
+            { word: "Meja itu", role: "S" },
+            { word: "bersih.", role: "P" },
+        ]
+    },
+    // Soal 12: S-P-K (Keterangan cara, Tanpa Objek)
+    {
+        sentence: "Bunga-bunga bermekaran indah di kebun.",
+        parts: [
+            { word: "Bunga-bunga", role: "S" },
+            { word: "bermekaran", role: "P" },
+            { word: "indah", role: "K" },
+            { word: "di kebun.", role: "K" },
+        ]
+    },
+    // Soal 13: S-P-O-K (Frasa Subjek panjang)
+    {
+        sentence: "Anak yang berbaju merah itu sedang menggambar pemandangan di buku.",
+        parts: [
+            { word: "Anak yang berbaju merah itu", role: "S" },
+            { word: "sedang menggambar", role: "P" },
+            { word: "pemandangan", role: "O" },
+            { word: "di buku.", role: "K" },
+        ]
+    },
+    // Soal 14: S-P-O (Objek berupa nama)
+    {
+        sentence: "Guru memanggil Rina ke depan.",
+        parts: [
+            { word: "Guru", role: "S" },
+            { word: "memanggil", role: "P" },
+            { word: "Rina", role: "O" },
+            { word: "ke depan.", role: "K" },
+        ]
+    },
+    // Soal 15: S-P-K (Keterangan waktu)
+    {
+        sentence: "Paman datang tiba-tiba malam ini.",
+        parts: [
+            { word: "Paman", role: "S" },
+            { word: "datang", role: "P" },
+            { word: "tiba-tiba", role: "K" },
+            { word: "malam ini.", role: "K" },
+        ]
+    },
+];
+
+        let currentQuestionIndex = 0;
+        let questionsShuffled = [...QUESTIONS].sort(() => Math.random() - 0.5); // Acak soal
+
+        const sentenceContainer = document.getElementById('sentence-container');
+        const dropTargets = document.querySelectorAll('.drop-target');
+        const checkButton = document.getElementById('check-button');
+        const nextButton = document.getElementById('next-button');
+        const finalFeedback = document.getElementById('final-feedback');
+
+        // --- FUNGSI DRAG-AND-DROP ---
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            // Tambahkan kelas opacity atau shadow saat drag
+            setTimeout(() => e.target.classList.add('opacity-50'), 0);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); // Wajib untuk mengizinkan drop
+            if (e.target.closest('.drop-target')) {
+                e.target.closest('.drop-target').classList.add('drag-active');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.closest('.drop-target')) {
+                e.target.closest('.drop-target').classList.remove('drag-active');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const data = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.getElementById(data);
+            const dropTarget = e.target.closest('.drop-target');
+            
+            if (dropTarget && draggedElement) {
+                // Hapus token dari tempat asalnya
+                draggedElement.parentElement.removeChild(draggedElement);
+                // Tambahkan token ke drop target
+                dropTarget.appendChild(draggedElement);
+                
+                // Atur ulang tampilan token agar pas di kotak drop
+                draggedElement.classList.remove('opacity-50', 'text-4xl');
+                draggedElement.classList.add('text-lg', 'bg-white', 'p-2', 'rounded-lg', 'shadow-md', 'border');
+            }
+            dropTargets.forEach(target => target.classList.remove('drag-active'));
+            checkButton.disabled = false;
+        }
+
+        // --- FUNGSI UTAMA GAME ---
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questionsShuffled.length) {
+                showFinalGameMessage("🎉 Semua soal Selesai! Kamu detektif kalimat yang luar biasa!");
+                nextButton.disabled = true;
+                return;
+            }
+
+            const q = questionsShuffled[currentQuestionIndex];
+            
+            // 1. Bersihkan Area
+            sentenceContainer.innerHTML = '';
+            dropTargets.forEach(target => {
+                target.innerHTML = `<h4 class="text-2xl font-bold text-${target.dataset.spok === 'S' ? 'yellow' : target.dataset.spok === 'P' ? 'green' : target.dataset.spok === 'O' ? 'red' : 'blue'}-700 text-center mb-2">${target.dataset.spok} (${target.dataset.spok === 'S' ? 'SUBJEK' : target.dataset.spok === 'P' ? 'PREDIKAT' : target.dataset.spok === 'O' ? 'OBJEK' : 'KETERANGAN'})</h4>`;
+                target.classList.remove('correct-drop', 'incorrect-drop');
+            });
+            finalFeedback.classList.add('hidden');
+            checkButton.disabled = false;
+            nextButton.disabled = true;
+
+            // 2. Buat Token Kata
+            q.parts.forEach((part, index) => {
+                const token = document.createElement('span');
+                token.id = `token-${currentQuestionIndex}-${index}`;
+                token.className = `word-token text-4xl font-extrabold text-indigo-800 p-2 transition duration-300`;
+                token.textContent = part.word;
+                token.setAttribute('draggable', true);
+                token.dataset.role = part.role; // Simpan peran yang benar di data-set
+                
+                token.addEventListener('dragstart', handleDragStart);
+                sentenceContainer.appendChild(token);
+            });
+        }
+
+        function checkAllAnswers() {
+            let allCorrect = true;
+            let totalWords = 0;
+            let correctWords = 0;
+
+            dropTargets.forEach(target => {
+                const correctRole = target.dataset.spok;
+                const tokens = target.querySelectorAll('.word-token');
+                
+                target.classList.remove('correct-drop', 'incorrect-drop');
+                totalWords += questionsShuffled[currentQuestionIndex].parts.filter(p => p.role === correctRole).length;
+                
+                // Cek setiap token di target drop
+                tokens.forEach(token => {
+                    if (token.dataset.role === correctRole) {
+                        token.style.border = '3px solid #10b981'; // Hijau
+                        correctWords++;
+                    } else {
+                        token.style.border = '3px solid #ef4444'; // Merah
+                        allCorrect = false;
+                    }
+                });
+                
+                // Beri warna latar belakang pada drop area
+                if (tokens.length > 0) {
+                    const incorrectCount = Array.from(tokens).filter(t => t.dataset.role !== correctRole).length;
+                    const correctCount = tokens.length - incorrectCount;
+                    
+                    if (incorrectCount === 0 && correctCount === questionsShuffled[currentQuestionIndex].parts.filter(p => p.role === correctRole).length) {
+                         target.classList.add('correct-drop');
+                    } else if (incorrectCount > 0) {
+                         target.classList.add('incorrect-drop');
+                         allCorrect = false;
+                    }
+                }
+            });
+
+            if (allCorrect && correctWords === totalWords) {
+                showFinalGameMessage("🎉 HEBAT! Semua komponen sudah benar! Kamu jenius SPOK!", true);
+                nextButton.disabled = false;
+            } else {
+                showFinalGameMessage("😕 Ada beberapa yang belum tepat. Coba diskusikan lagi dengan teman-teman!", false);
+            }
+            
+            checkButton.disabled = true; // Non-aktifkan tombol cek setelah pemeriksaan
+        }
+
+        function loadNextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showFinalGameMessage(message, isSuccess) {
+            finalFeedback.textContent = message;
+            finalFeedback.classList.remove('hidden', 'bg-red-200', 'bg-green-200');
+            finalFeedback.classList.add(isSuccess ? 'bg-green-200' : 'bg-red-200', isSuccess ? 'text-green-800' : 'text-red-800');
+        }
+
+        // --- INISIALISASI EVENT LISTENERS ---
+        function initializeDragEvents() {
+            dropTargets.forEach(target => {
+                target.addEventListener('dragover', handleDragOver);
+                target.addEventListener('dragleave', handleDragLeave);
+                target.addEventListener('drop', handleDrop);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDragEvents();
+            loadQuestion();
+        });
+    </script>
+</body>
+</html>
