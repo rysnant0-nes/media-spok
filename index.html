@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPOK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+        body {
+            font-family: 'Fredoka', cursive; /* Font ceria untuk anak-anak */
+            background: linear-gradient(to right bottom, #a7f3d0, #bfdbfe); /* Gradien latar belakang */
+            animation: backgroundShift 15s ease infinite alternate; /* Animasi latar belakang */
+        }
+
+        @keyframes backgroundShift {
+            0% { background: linear-gradient(to right bottom, #a7f3d0, #bfdbfe); }
+            33% { background: linear-gradient(to right bottom, #bfdbfe, #fbcfe8); }
+            66% { background: linear-gradient(to right bottom, #fbcfe8, #fef08a); }
+            100% { background: linear-gradient(to right bottom, #fef08a, #a7f3d0); }
+        }
+
+        .card-shadow {
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease-in-out;
+        }
+        .card-shadow:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Animasi masuk */
+        .fade-in {
+            animation: fadeIn 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-1 { animation-delay: 0.3s; }
+        .fade-in-2 { animation-delay: 0.6s; }
+        .fade-in-3 { animation-delay: 0.9s; }
+        .fade-in-4 { animation-delay: 1.2s; }
+        .fade-in-5 { animation-delay: 1.5s; }
+        .detail-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .detail-content.active {
+            max-height: 200px; 
+            transition: max-height 0.7s ease-in;
+        }
+       
+#introScreen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(rgba(0,0,0,0.95), rgba(0,0,0,1));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    overflow: hidden;
+    animation: fadeOut 1.2s ease forwards;
+    animation-delay: 5.5s;
+}
+
+.intro-container {
+    text-align: center;
+    position: relative;
+    animation: fadeInIntro 1.2s ease forwards;
+}
+
+
+.glow-circle {
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(255,255,255,0.6), transparent 70%);
+    filter: blur(45px);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+    animation: glowPop 2s ease forwards;
+}
+
+
+.intro-title {
+    color: white;
+    font-size: 54px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    opacity: 0;
+    animation: textFade 2.5s ease forwards;
+    animation-delay: 0.6s;
+}
+
+
+.intro-sub {
+    color: #cfcfcf;
+    font-size: 22px;
+    margin-top: 12px;
+    opacity: 0;
+    animation: textFade 2.5s ease forwards;
+    animation-delay: 1.3s;
+}
+
+
+
+@keyframes fadeInIntro {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glowPop {
+    0% { opacity: 0; transform: translate(-50%,-50%) scale(0.2); }
+    50% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    100% { opacity: 0.6; transform: translate(-50%,-50%) scale(0.9); }
+}
+
+@keyframes textFade {
+    0% { opacity: 0; filter: blur(12px); transform: translateY(25px); }
+    100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    100% { opacity: 0; visibility: hidden; }
+}
+
+    </style>
+</head>
+<body class="p-6 min-h-screen flex items-center justify-center">
+<audio id="introAudio" src="audio.mp3" preload="auto" playsinline></audio>
+
+<div id="introScreen">
+    <div class="intro-container">
+        <div class="glow-circle"></div>
+        <h1 class="intro-title">Pengenalan SPOK</h1>
+        <p class="intro-sub">Subjek • Predikat • Objek • Keterangan</p>
+    </div>
+</div>
+
+<div id="content" style="display:none;">
+    <h2>Materi Utama</h2>
+</div>
+
+    <div class="max-w-5xl mx-auto bg-white rounded-3xl card-shadow p-8 sm:p-12 border-4 border-fuchsia-300 fade-in fade-in-0">
+        
+        <header class="text-center mb-10 fade-in fade-in-1">
+            <h1 class="text-5xl font-extrabold text-fuchsia-700 leading-tight">
+                🌟 SPOK : MARI MENGENAL SPOK 🌟
+            </h1>
+            <p class="text-xl text-gray-600 mt-3">
+                Yuk, kita kenalan dengan 4 pahlawan dalam setiap kalimat!
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+
+            <div class="bg-yellow-100 p-6 rounded-2xl border-l-8 border-yellow-500 card-shadow fade-in fade-in-2">
+                <div class="flex items-center mb-3">
+                    <img src="https://img.icons8.com/plasticine/100/000000/person-male.png" alt="Subjek Icon" class="w-16 h-16 mr-4 animate-bounce-slow">
+                    <h2 class="text-3xl font-bold text-yellow-700">1. S = SUBJEK</h2>
+                </div>
+                <p class="text-lg text-gray-700">
+                    Ini dia tokoh utama kalimat! Siapa atau apa yang sedang <span class="font-extrabold">melakukan</span> sesuatu?
+                </p>
+                <div id="detail-subjek" class="detail-content mt-3 p-3 bg-yellow-200 rounded-lg text-yellow-800 border border-yellow-500 font-semibold text-base">
+                    <p>Contohnya: <span class="text-yellow-900">Adik</span>, <span class="text-yellow-900">Ibu</span>, <span class="text-yellow-900">Kucing</span>, <span class="text-yellow-900">Bunga</span>.</p>
+                </div>
+                <button onclick="toggleDetail('detail-subjek', this)" class="mt-4 px-4 py-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                    Lihat Contoh!
+                </button>
+            </div>
+            
+            <div class="bg-green-100 p-6 rounded-2xl border-l-8 border-green-500 card-shadow fade-in fade-in-3">
+                <div class="flex items-center mb-3">
+                    <img src="https://img.icons8.com/plasticine/100/000000/running.png" alt="Predikat Icon" class="w-16 h-16 mr-4 animate-pulse-slow">
+                    <h2 class="text-3xl font-bold text-green-700">2. P = PREDIKAT</h2>
+                </div>
+                <p class="text-lg text-gray-700">
+                    Ini adalah <span class="font-extrabold">pekerjaan</span> yang dilakukan Subjek! Apa yang sedang dikerjakan?
+                </p>
+                <div id="detail-predikat" class="detail-content mt-3 p-3 bg-green-200 rounded-lg text-green-800 border border-green-500 font-semibold text-base">
+                    <p>Contohnya: <span class="text-green-900">memasak</span>, <span class="text-green-900">membaca</span>, <span class="text-green-900">melompat</span>, <span class="text-green-900">terbang</span>.</p>
+                </div>
+                <button onclick="toggleDetail('detail-predikat', this)" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400">
+                    Lihat Contoh!
+                </button>
+            </div>
+
+            <div class="bg-red-100 p-6 rounded-2xl border-l-8 border-red-500 card-shadow fade-in fade-in-4">
+                <div class="flex items-center mb-3">
+                    <img src="https://img.icons8.com/plasticine/100/000000/apple.png" alt="Objek Icon" class="w-16 h-16 mr-4 animate-wiggle-slow">
+                    <h2 class="text-3xl font-bold text-red-700">3. O = OBJEK</h2>
+                </div>
+                <p class="text-lg text-gray-700">
+                    Ini adalah <span class="font-extrabold">sasaran</span> Predikat! Apa yang dikenai pekerjaan itu?
+                </p>
+                <div id="detail-objek" class="detail-content mt-3 p-3 bg-red-200 rounded-lg text-red-800 border border-red-500 font-semibold text-base">
+                    <p>Contohnya: <span class="text-red-900">roti</span>, <span class="text-red-900">buku</span>, <span class="text-red-900">layang-layang</span>, <span class="text-red-900">boneka</span>.</p>
+                </div>
+                <button onclick="toggleDetail('detail-objek', this)" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400">
+                    Lihat Contoh!
+                </button>
+            </div>
+
+            <div class="bg-blue-100 p-6 rounded-2xl border-l-8 border-blue-500 card-shadow fade-in fade-in-5">
+                <div class="flex items-center mb-3">
+                    <img src="https://img.icons8.com/plasticine/100/000000/time.png" alt="Keterangan Icon" class="w-16 h-16 mr-4 animate-spin-slow">
+                    <h2 class="text-3xl font-bold text-blue-700">4. K = KETERANGAN</h2>
+                </div>
+                <p class="text-lg text-gray-700">
+                    Informasi <span class="font-extrabold">tambahan</span>! Kapan atau di mana kejadiannya? (Kadang ada, kadang tidak!)
+                </p>
+                <div id="detail-keterangan" class="detail-content mt-3 p-3 bg-blue-200 rounded-lg text-blue-800 border border-blue-500 font-semibold text-base">
+                    <p>Contohnya: <span class="text-blue-900">di taman</span>, <span class="text-blue-900">setiap pagi</span>, <span class="text-blue-900">dengan gembira</span>, <span class="text-blue-900">kemarin sore</span>.</p>
+                </div>
+                <button onclick="toggleDetail('detail-keterangan', this)" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    Lihat Contoh!
+                </button>
+            </div>
+
+        </div>
+        
+        <hr class="my-10 border-t-4 border-fuchsia-400 fade-in fade-in-6">
+
+        <div class="text-center fade-in fade-in-7">
+            <h3 class="text-4xl font-bold text-fuchsia-600 mb-6 animate-pulse">Contoh Kalimat SPOK ✨</h3>
+            <div class="bg-fuchsia-100 p-8 rounded-3xl border-4 border-fuchsia-400 relative overflow-hidden">
+                <p class="text-3xl sm:text-4xl font-extrabold text-gray-800 z-10 relative">
+                    <span class="text-yellow-700 animate-bounce-word" style="animation-delay: 0.1s;">Adik</span> 
+                    <span class="text-green-700 animate-bounce-word" style="animation-delay: 0.3s;">menulis</span> 
+                    <span class="text-red-700 animate-bounce-word" style="animation-delay: 0.5s;">surat</span> 
+                    <span class="text-blue-700 animate-bounce-word" style="animation-delay: 0.7s;">di meja</span>.
+                </p>
+                <p class="text-2xl mt-5 font-bold z-10 relative">
+                    <span class="text-yellow-700">(S)</span> + 
+                    <span class="text-green-700">(P)</span> + 
+                    <span class="text-red-700">(O)</span> + 
+                    <span class="text-blue-700">(K)</span>
+                </p>
+                <img src="https://img.icons8.com/color/96/000000/sparkling.png" class="absolute top-4 left-4 w-12 h-12 opacity-50 animate-sparkle" style="animation-delay: 0.2s;">
+                <img src="https://img.icons8.com/color/96/000000/star.png" class="absolute bottom-4 right-4 w-10 h-10 opacity-50 animate-sparkle" style="animation-delay: 0.7s;">
+            </div>
+        </div>
+
+        <footer class="text-center mt-10 text-xl text-gray-500 fade-in fade-in-8">
+            Hore! Sekarang kamu sudah jadi detektif SPOK yang hebat! 🎉
+        <a href="drag.html" class=" mt-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400">AYO KITA QUIZ</a>
+
+        </footer>
+
+
+    </div>
+
+    <script>
+        window.onload = function() {
+    const audio = document.getElementById("introAudio");
+    audio.volume = 1;
+    audio.play().catch(() => {
+        document.body.addEventListener("click", () => audio.play(), { once: true });
+    });
+
+    setTimeout(() => {
+        document.getElementById("introScreen").style.display = "none";
+        document.getElementById("content").style.display = "block";
+    }, 10000);
+};
+
+        function toggleDetail(id, button) {
+            const element = document.getElementById(id);
+            element.classList.toggle('active');
+            if (element.classList.contains('active')) {
+                button.textContent = 'Sembunyikan Contoh';
+            } else {
+                button.textContent = 'Lihat Contoh!';
+            }
+        }
+
+        const words = document.querySelectorAll('.animate-bounce-word');
+        words.forEach(word => {
+            word.addEventListener('animationend', () => {
+                word.style.animation = 'none'; // Hapus animasi setelah selesai sekali
+            });
+        });
+
+        // Custom Tailwind-like animations for icons and words
+        const style = document.createElement('style');
+        style.innerHTML = `
+        .animate-bounce-slow {
+            animation: bounceSlow 2s infinite ease-in-out;
+        }
+        @keyframes bounceSlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animate-pulse-slow {
+            animation: pulseSlow 2s infinite ease-in-out;
+        }
+        @keyframes pulseSlow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .animate-wiggle-slow {
+            animation: wiggleSlow 2.5s infinite ease-in-out;
+        }
+        @keyframes wiggleSlow {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+            75% { transform: rotate(-3deg); }
+        }
+
+        .animate-spin-slow {
+            animation: spinSlow 5s linear infinite;
+        }
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-bounce-word {
+            animation: bounceWord 0.6s ease-out forwards;
+            display: inline-block; /* Penting agar transform bekerja pada span */
+        }
+        @keyframes bounceWord {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .animate-sparkle {
+            animation: sparkle 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+            50% { transform: scale(1.2) rotate(10deg); opacity: 0.9; }
+        }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
