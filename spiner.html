@@ -122,7 +122,34 @@
     </style>
 </head>
 <body>
+<h2>🔴 LIVE RADIO</h2>
+<p id="status">Connecting...</p>
 
+<audio id="radio" autoplay>
+  <source src="https://stream-node0.rri.co.id/streaming/14/9014/kbrn.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const radio = document.getElementById("radio");
+const statusText = document.getElementById("status");
+
+function startRadio() {
+    radio.play()
+    .then(() => {
+        statusText.innerText = "Streaming...";
+        console.log("Radio Started");
+    })
+    .catch(() => {
+        statusText.innerText = "Autoplay blocked, retrying...";
+        setTimeout(startRadio, 2000);
+    });
+}
+
+// Auto start ketika halaman load
+window.addEventListener("load", () => {
+    startRadio();
+});
+</script>
     <div class="w-full max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-8 border-8 border-yellow-400">
         
         <header class="text-center mb-6">
@@ -480,5 +507,7 @@
             feedbackArea.classList.add(bgColor, textColor);
         }
     </script>
+    
 </body>
 </html>
+
